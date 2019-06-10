@@ -1,4 +1,17 @@
-# Zuul(1.X)
+# 1. Zuul(1.X)
+<!-- TOC -->
+
+- [1. Zuul(1.X)](#1-zuul1x)
+    - [1.1. 工作原理](#11-%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86)
+    - [1.2. 实战](#12-%E5%AE%9E%E6%88%98)
+        - [1.2.1. 搭建Zuul服务](#121-%E6%90%AD%E5%BB%BAzuul%E6%9C%8D%E5%8A%A1)
+        - [1.2.2. 在Zuul上配置API接口的版本号](#122-%E5%9C%A8zuul%E4%B8%8A%E9%85%8D%E7%BD%AEapi%E6%8E%A5%E5%8F%A3%E7%9A%84%E7%89%88%E6%9C%AC%E5%8F%B7)
+        - [1.2.3. 在Zuul上配置熔断器](#123-%E5%9C%A8zuul%E4%B8%8A%E9%85%8D%E7%BD%AE%E7%86%94%E6%96%AD%E5%99%A8)
+        - [1.2.4. 使用过滤器](#124-%E4%BD%BF%E7%94%A8%E8%BF%87%E6%BB%A4%E5%99%A8)
+        - [Zuul的常见使用方式](#zuul%E7%9A%84%E5%B8%B8%E8%A7%81%E4%BD%BF%E7%94%A8%E6%96%B9%E5%BC%8F)
+
+<!-- /TOC -->
+
 
 - Zuul作为路由网关，有6个作用
 1. Zuul、Ribbon和eureka结合，实现智能路由和负载均衡。
@@ -9,7 +22,7 @@
 6. 分离API接口，方便测试。
 - Zuul Wiki
 - https://github.com/Netflix/zuul/wiki
-## 工作原理
+## 1.1. 工作原理
 - Zuul是通过Servlet实现的。Zuul通过自定义的ZuulServlet(类似spring mvc的DispatchServlet)来对请求进行控制。
 - Zuul包括以下4种过滤器。
     - PRE过滤器:在请求路由到具体服务之前执行的。可以作安全验证，如身份、参数验证。
@@ -28,9 +41,9 @@
 
 
 
-## 实战
+## 1.2. 实战
 
-### 搭建Zuul服务
+### 1.2.1. 搭建Zuul服务
 - 创建一个eureka-client项目，引入依赖：
 ```
 <dependency>
@@ -67,14 +80,14 @@
     - 如要访问eureka-client的hi接口，路由为/hiapi/hi?name=tee
 
 
-### 在Zuul上配置API接口的版本号
+### 1.2.2. 在Zuul上配置API接口的版本号
 - 如果想给每个服务的API接口加前缀，例如v1/hiapi/hi?name=tee
 - 需要用到zuul.prefix的配置。
 ```
 zuul.prefix: /v1
 ```
 
-### 在Zuul上配置熔断器
+### 1.2.3. 在Zuul上配置熔断器
 - Zuul实现熔断功能需要实现ZuulFallbackProvider的接口。
 - 新版本已经换成了FallbackProvider了。
 - 该接口有两个方法
@@ -133,7 +146,7 @@ public class HiFallbackProvider implements FallbackProvider {
 }
 ```
 
-### 使用过滤器
+### 1.2.4. 使用过滤器
 - 前面提到过过滤器的作用和种类。
 - 实现过滤器只需要继承ZuulFilter，并实现方法即可。
 - ZuulFilter有2个抽象方法。
@@ -195,12 +208,12 @@ public class TestFilter extends ZuulFilter {
     }
 }
 ```
-- P152
+- 在实际开发中，可以用此过滤器进行安全验证。
 
+### Zuul的常见使用方式
+- Zuul采用了类似Spring MVC的DispatchServlet来实现，采用的是异步阻塞模型，所以性能比Ngnix差。
+- 但是Zuul和其他Netflix组件可以互相配合、无缝集成，很容易就能实现负载均衡、智能路由和熔断器等功能，而且大多数情况下Zuul以集群的形式存在的，横向扩展能力非常好。因此当负载过高时，可以通过添加实例来解决性能瓶颈。
 
-
-
-
-
+- 一种常见的方式时对不同的去到使用不同的Zuul来路由。如移动端共用一个Zuul网关实例，Web端用另一个Zuul网关实例。
 
 
