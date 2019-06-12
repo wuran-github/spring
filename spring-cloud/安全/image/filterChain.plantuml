@@ -1,0 +1,12 @@
+@startuml filterChain
+title filterChain
+start
+:过滤器A.doFilter();
+:执行chain.doFilter();
+:往下传递给NP.doFilter();
+:NP逻辑执行完，执行successfulAuthentication();
+:NP设置了securityContext;
+:返回到A，A执行successfulAuthentication();
+:A设置securityContext，覆盖了NP的设置;
+stop
+@enduml
