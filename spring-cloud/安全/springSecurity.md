@@ -10,12 +10,13 @@
         - [1.2.2. 配置Spring Security](#122-%E9%85%8D%E7%BD%AEspring-security)
             - [1.2.2.1. 配置WebSecurityConfigurerAdapter](#1221-%E9%85%8D%E7%BD%AEwebsecurityconfigureradapter)
             - [1.2.2.2. 配置HttpSecurity](#1222-%E9%85%8D%E7%BD%AEhttpsecurity)
-        - [Spring Security方法级别上的保护](#spring-security%E6%96%B9%E6%B3%95%E7%BA%A7%E5%88%AB%E4%B8%8A%E7%9A%84%E4%BF%9D%E6%8A%A4)
-        - [从数据库中读取用户的认证信息](#%E4%BB%8E%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%AD%E8%AF%BB%E5%8F%96%E7%94%A8%E6%88%B7%E7%9A%84%E8%AE%A4%E8%AF%81%E4%BF%A1%E6%81%AF)
-            - [创建User实体](#%E5%88%9B%E5%BB%BAuser%E5%AE%9E%E4%BD%93)
-            - [创建Role实体](#%E5%88%9B%E5%BB%BArole%E5%AE%9E%E4%BD%93)
-            - [UserDao](#userdao)
-            - [UserService](#userservice)
+        - [1.2.3. Spring Security方法级别上的保护](#123-spring-security%E6%96%B9%E6%B3%95%E7%BA%A7%E5%88%AB%E4%B8%8A%E7%9A%84%E4%BF%9D%E6%8A%A4)
+        - [1.2.4. 从数据库中读取用户的认证信息](#124-%E4%BB%8E%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%AD%E8%AF%BB%E5%8F%96%E7%94%A8%E6%88%B7%E7%9A%84%E8%AE%A4%E8%AF%81%E4%BF%A1%E6%81%AF)
+            - [1.2.4.1. 创建User实体](#1241-%E5%88%9B%E5%BB%BAuser%E5%AE%9E%E4%BD%93)
+            - [1.2.4.2. 创建Role实体](#1242-%E5%88%9B%E5%BB%BArole%E5%AE%9E%E4%BD%93)
+            - [1.2.4.3. UserDao](#1243-userdao)
+            - [1.2.4.4. UserService](#1244-userservice)
+            - [1.2.4.5. Spring Security 配置](#1245-spring-security-%E9%85%8D%E7%BD%AE)
 - [2. 深入](#2-%E6%B7%B1%E5%85%A5)
     - [2.1. 关于自定义登录问题](#21-%E5%85%B3%E4%BA%8E%E8%87%AA%E5%AE%9A%E4%B9%89%E7%99%BB%E5%BD%95%E9%97%AE%E9%A2%98)
         - [2.1.1. 过滤链](#211-%E8%BF%87%E6%BB%A4%E9%93%BE)
@@ -170,7 +171,7 @@ protected void configure(HttpSecurity http) throws Exception {
 
 - 最前面是在UserName拦截器前增加了一个验证码拦截器。
 
-### Spring Security方法级别上的保护
+### 1.2.3. Spring Security方法级别上的保护
 - SS提供方法级别的安全支持。
 - 写一个配置类继承WebSecurityConfigurerAdapter，并加上相关注解，就可以开启方法级别的保护：
 ```
@@ -203,7 +204,7 @@ or
 ```
 - 如果没有权限，就会被重定向到权限不足的界面。
 
-### 从数据库中读取用户的认证信息
+### 1.2.4. 从数据库中读取用户的认证信息
 - 加上Mysql的依赖
 ```
  <dependency>
@@ -218,28 +219,37 @@ or
 
 ```
 
-#### 创建User实体
+#### 1.2.4.1. 创建User实体
 - User实体需要实现UserDetails接口。
 - UserDetail是实现SS认证信息的核心接口。getUsername不一定返回uername，可以是其他用户信息。
 - getAuthorities方法返回的是该用户设置的权限信息，这里是角色信息，但是你可以返回其他信息。
 - 其他的接口一般返回true，可以从方法名判断是有什么用的。
+- 注意映射的多对多Roles关系不能懒加载，必须Eager,把角色全部读取出来。
 ```
 @Entity(name = "auth_user")
 public class User implements UserDetails, Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-
     @Column(name = "user_name")
     String username;
     @Column(name = "password")
     String password;
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "auth_role_user_mapping",
             joinColumns = {@JoinColumn(name = "user_id", referencedColumnName = "id")},
             inverseJoinColumns = {@JoinColumn(name = "role_id", referencedColumnName = "id")})
     @JsonManagedReference
     Set<Role> roles = new HashSet<>(0);
+
+    public User(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
+    public User() {
+
+    }
 
     public long getId() {
         return id;
@@ -273,12 +283,12 @@ public class User implements UserDetails, Serializable {
 
     @Override
     public String getPassword() {
-        return getPassword();
+        return password;
     }
 
     @Override
     public String getUsername() {
-        return getUsername();
+        return username;
     }
 
     @Override
@@ -302,7 +312,7 @@ public class User implements UserDetails, Serializable {
     }
 }
 ```
-#### 创建Role实体
+#### 1.2.4.2. 创建Role实体
 - Role类实现了GrantedAuthority接口，getAuthority方法返回该类的权限点。权限点可以为任何字符串，根据你的业务需求来定义。在这里返回Role的name
 ```
 @Entity(name = "auth_role")
@@ -336,7 +346,7 @@ public class Role implements GrantedAuthority {
 }
 ```
 
-#### UserDao
+#### 1.2.4.3. UserDao
 - Dao层就是使用JPA接口去访问数据库，这里我们继承JpaRepository即可。同时加上注解@Repository，注入SpringIOC容器。
 ```
 @Repository
@@ -345,10 +355,61 @@ public interface UserDao extends JpaRepository<User, Long> {
 }
 ```
 
-#### UserService
+#### 1.2.4.4. UserService
 - Service层需要实现UserDetailService接口，该接口是根据用户名获取该用户的所有信息，包括用户信息和权限点。
-- 
+```
+@Service
+public class UserService implements UserDetailsService {
+    @Autowired
+    private UserDao userDao;
 
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return userDao.findByUsername(username);
+    }
+    public void addUser(User user){
+        userDao.save(user);
+    }
+}
+```
+
+#### 1.2.4.5. Spring Security 配置
+- 修改SS的配置，从内存读取改为从数据库中读取。
+- 同时还需要修改密码加密策略，加入一个bean
+```
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.userDetailsService(userDetailsService).passwordEncoder(new BCryptPasswordEncoder());
+    }
+```
+- 为了方便添加用户，新增一个addUser的接口，用来添加用户。
+    - 自动注入一个PasswordEncoder用来加密密码
+    - 一个UserService用来操作数据库
+    - 添加角色可以直接创建一个只设置了id的Role。
+```
+@RestController
+public class UserController {
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @RequestMapping("addUser/{name}/{password}/{role}")
+    public Map<String, Object> addUser(@PathVariable("name") String name,
+                                       @PathVariable("password") String password,
+                                       @PathVariable("role") int role)
+    {
+        Map<String, Object> maps = new HashMap<>();
+        User user = new User(name, passwordEncoder.encode(password));
+        Role role1 = new Role();
+        role1.setId(role);
+        user.addRole(role1);
+        userService.addUser(user);
+        maps.put("status", 1);
+        maps.put("message","success");
+        return maps;
+    }
+}
+```
+  
 
 
 
