@@ -2,13 +2,15 @@
 <!-- TOC -->
 
 - [1. Zuul(1.X)](#1-zuul1x)
-    - [1.1. 工作原理](#11-%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86)
-    - [1.2. 实战](#12-%E5%AE%9E%E6%88%98)
-        - [1.2.1. 搭建Zuul服务](#121-%E6%90%AD%E5%BB%BAzuul%E6%9C%8D%E5%8A%A1)
-        - [1.2.2. 在Zuul上配置API接口的版本号](#122-%E5%9C%A8zuul%E4%B8%8A%E9%85%8D%E7%BD%AEapi%E6%8E%A5%E5%8F%A3%E7%9A%84%E7%89%88%E6%9C%AC%E5%8F%B7)
-        - [1.2.3. 在Zuul上配置熔断器](#123-%E5%9C%A8zuul%E4%B8%8A%E9%85%8D%E7%BD%AE%E7%86%94%E6%96%AD%E5%99%A8)
-        - [1.2.4. 使用过滤器](#124-%E4%BD%BF%E7%94%A8%E8%BF%87%E6%BB%A4%E5%99%A8)
-        - [Zuul的常见使用方式](#zuul%E7%9A%84%E5%B8%B8%E8%A7%81%E4%BD%BF%E7%94%A8%E6%96%B9%E5%BC%8F)
+    - [1.1. 工作原理](#11-工作原理)
+    - [1.2. 实战](#12-实战)
+        - [1.2.1. 搭建Zuul服务](#121-搭建zuul服务)
+        - [1.2.2. 在Zuul上配置API接口的版本号](#122-在zuul上配置api接口的版本号)
+        - [1.2.3. 在Zuul上配置熔断器](#123-在zuul上配置熔断器)
+        - [1.2.4. 使用过滤器](#124-使用过滤器)
+        - [Zuul的常见使用方式](#zuul的常见使用方式)
+    - [其他注意事项](#其他注意事项)
+        - [如何让服务只让Zuul访问，不让外部访问](#如何让服务只让zuul访问不让外部访问)
 
 <!-- /TOC -->
 
@@ -32,7 +34,7 @@
 
 - Zuul采取了动态读取、编译和运行这些过滤器。过滤器之间不能直接互相通信，通过RequestContext对象来共享数据。每个请求都会创建一个RequestContext对象。Zuul过滤器具有以下关键特性：
     - Type:过滤器的类型
-    - Execution Order(执行顺序)：规定了过滤器的执行四混徐，Order的值越小，越先执行。
+    - Execution Order(执行顺序)：规定了过滤器的执行顺序，Order的值越小，越先执行。
     - Criteria(标准)：Filter执行所需的条件。
     - Action：如果符合条件，就执行Action。
 
@@ -215,5 +217,23 @@ public class TestFilter extends ZuulFilter {
 - 但是Zuul和其他Netflix组件可以互相配合、无缝集成，很容易就能实现负载均衡、智能路由和熔断器等功能，而且大多数情况下Zuul以集群的形式存在的，横向扩展能力非常好。因此当负载过高时，可以通过添加实例来解决性能瓶颈。
 
 - 一种常见的方式时对不同的去到使用不同的Zuul来路由。如移动端共用一个Zuul网关实例，Web端用另一个Zuul网关实例。
+
+## 其他注意事项
+- 如果使用zuul网关转发请求，一定要设置sensitiveHeaders为空，该属性用于过滤敏感头部信息，而默认的敏感头部信息包括了Authorization。
+```
+	/**
+	 * List of sensitive headers that are not passed to downstream requests. Defaults to a
+	 * "safe" set of headers that commonly contain user credentials. It's OK to remove
+	 * those from the list if the downstream service is part of the same system as the
+	 * proxy, so they are sharing authentication data. If using a physical URL outside
+	 * your own domain, then generally it would be a bad idea to leak user credentials.
+	 */
+	private Set<String> sensitiveHeaders = new LinkedHashSet<>(
+			Arrays.asList("Cookie", "Set-Cookie", "Authorization"));
+
+```
+
+### 如何让服务只让Zuul访问，不让外部访问
+- 答案是内网隔离。其他服务不开放端口，都是内网，只开放网关端口为外网。
 
 

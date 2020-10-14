@@ -1,0 +1,12 @@
+@startuml
+title jwt
+participant 浏览器
+participant 服务器
+autonumber
+浏览器 -> 服务器: 登录(username + password)
+服务器 -> 服务器: 用密钥创建JWT
+浏览器 <- 服务器: 返回JWT
+浏览器 -> 服务器: 在Header加JWT
+服务器 -> 服务器: 检查JWT解密，\n 获取用户信息
+浏览器 <- 服务器: 响应给客户端
+@enduml

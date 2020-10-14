@@ -1,28 +1,33 @@
-# 1. Spring Security
+# Spring Security
 
 <!-- TOC -->
 
-- [1. Spring Security](#1-spring-security)
-    - [1.1. Spring Security提供的安全模块](#11-spring-security%E6%8F%90%E4%BE%9B%E7%9A%84%E5%AE%89%E5%85%A8%E6%A8%A1%E5%9D%97)
-    - [1.2. Spring Boot Security案例](#12-spring-boot-security%E6%A1%88%E4%BE%8B)
-        - [1.2.1. 构建Spring boot Security工程](#121-%E6%9E%84%E5%BB%BAspring-boot-security%E5%B7%A5%E7%A8%8B)
-            - [1.2.1.1. POM依赖](#1211-pom%E4%BE%9D%E8%B5%96)
-        - [1.2.2. 配置Spring Security](#122-%E9%85%8D%E7%BD%AEspring-security)
-            - [1.2.2.1. 配置WebSecurityConfigurerAdapter](#1221-%E9%85%8D%E7%BD%AEwebsecurityconfigureradapter)
-            - [1.2.2.2. 配置HttpSecurity](#1222-%E9%85%8D%E7%BD%AEhttpsecurity)
-        - [1.2.3. Spring Security方法级别上的保护](#123-spring-security%E6%96%B9%E6%B3%95%E7%BA%A7%E5%88%AB%E4%B8%8A%E7%9A%84%E4%BF%9D%E6%8A%A4)
-        - [1.2.4. 从数据库中读取用户的认证信息](#124-%E4%BB%8E%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%AD%E8%AF%BB%E5%8F%96%E7%94%A8%E6%88%B7%E7%9A%84%E8%AE%A4%E8%AF%81%E4%BF%A1%E6%81%AF)
-            - [1.2.4.1. 创建User实体](#1241-%E5%88%9B%E5%BB%BAuser%E5%AE%9E%E4%BD%93)
-            - [1.2.4.2. 创建Role实体](#1242-%E5%88%9B%E5%BB%BArole%E5%AE%9E%E4%BD%93)
-            - [1.2.4.3. UserDao](#1243-userdao)
-            - [1.2.4.4. UserService](#1244-userservice)
-            - [1.2.4.5. Spring Security 配置](#1245-spring-security-%E9%85%8D%E7%BD%AE)
-- [2. 深入](#2-%E6%B7%B1%E5%85%A5)
-    - [2.1. 关于自定义登录问题](#21-%E5%85%B3%E4%BA%8E%E8%87%AA%E5%AE%9A%E4%B9%89%E7%99%BB%E5%BD%95%E9%97%AE%E9%A2%98)
-        - [2.1.1. 过滤链](#211-%E8%BF%87%E6%BB%A4%E9%93%BE)
-            - [2.1.1.1. AbstractAuthenticationProcessingFilter源码解析](#2111-abstractauthenticationprocessingfilter%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90)
-            - [2.1.1.2. Authentication解析](#2112-authentication%E8%A7%A3%E6%9E%90)
-            - [2.1.1.3. 自定义验证码过滤器](#2113-%E8%87%AA%E5%AE%9A%E4%B9%89%E9%AA%8C%E8%AF%81%E7%A0%81%E8%BF%87%E6%BB%A4%E5%99%A8)
+- [Spring Security](#spring-security)
+    - [Spring Security提供的安全模块](#spring-security%e6%8f%90%e4%be%9b%e7%9a%84%e5%ae%89%e5%85%a8%e6%a8%a1%e5%9d%97)
+    - [Spring Boot Security案例](#spring-boot-security%e6%a1%88%e4%be%8b)
+        - [构建Spring boot Security工程](#%e6%9e%84%e5%bb%baspring-boot-security%e5%b7%a5%e7%a8%8b)
+            - [POM依赖](#pom%e4%be%9d%e8%b5%96)
+        - [配置Spring Security](#%e9%85%8d%e7%bd%aespring-security)
+            - [配置WebSecurityConfigurerAdapter](#%e9%85%8d%e7%bd%aewebsecurityconfigureradapter)
+            - [配置HttpSecurity](#%e9%85%8d%e7%bd%aehttpsecurity)
+        - [Spring Security方法级别上的保护](#spring-security%e6%96%b9%e6%b3%95%e7%ba%a7%e5%88%ab%e4%b8%8a%e7%9a%84%e4%bf%9d%e6%8a%a4)
+        - [从数据库中读取用户的认证信息](#%e4%bb%8e%e6%95%b0%e6%8d%ae%e5%ba%93%e4%b8%ad%e8%af%bb%e5%8f%96%e7%94%a8%e6%88%b7%e7%9a%84%e8%ae%a4%e8%af%81%e4%bf%a1%e6%81%af)
+            - [创建User实体](#%e5%88%9b%e5%bb%bauser%e5%ae%9e%e4%bd%93)
+            - [创建Role实体](#%e5%88%9b%e5%bb%barole%e5%ae%9e%e4%bd%93)
+            - [UserDao](#userdao)
+            - [UserService](#userservice)
+            - [Spring Security 配置](#spring-security-%e9%85%8d%e7%bd%ae)
+    - [注意事项](#%e6%b3%a8%e6%84%8f%e4%ba%8b%e9%a1%b9)
+        - [登录部分](#%e7%99%bb%e5%bd%95%e9%83%a8%e5%88%86)
+        - [静态资源被拦截问题](#%e9%9d%99%e6%80%81%e8%b5%84%e6%ba%90%e8%a2%ab%e6%8b%a6%e6%88%aa%e9%97%ae%e9%a2%98)
+- [深入](#%e6%b7%b1%e5%85%a5)
+    - [插入过滤器](#%e6%8f%92%e5%85%a5%e8%bf%87%e6%bb%a4%e5%99%a8)
+        - [addFilter](#addfilter)
+    - [关于自定义登录问题](#%e5%85%b3%e4%ba%8e%e8%87%aa%e5%ae%9a%e4%b9%89%e7%99%bb%e5%bd%95%e9%97%ae%e9%a2%98)
+        - [过滤链](#%e8%bf%87%e6%bb%a4%e9%93%be)
+            - [AbstractAuthenticationProcessingFilter源码解析](#abstractauthenticationprocessingfilter%e6%ba%90%e7%a0%81%e8%a7%a3%e6%9e%90)
+            - [Authentication解析](#authentication%e8%a7%a3%e6%9e%90)
+            - [自定义验证码过滤器](#%e8%87%aa%e5%ae%9a%e4%b9%89%e9%aa%8c%e8%af%81%e7%a0%81%e8%bf%87%e6%bb%a4%e5%99%a8)
 
 <!-- /TOC -->
 - Spring Security(下称SS)是Spring的一个安全组件。
@@ -30,7 +35,7 @@
 - SS可以在Controller层、Service层、DAO层等以加注解的方式来保护应用程序的安全。
 - SS提供了细粒度的权限控制，可以精细到每一个API接口、每一个业务的方法。
 
-## 1.1. Spring Security提供的安全模块
+## Spring Security提供的安全模块
 - 在安全验证方面， SS提供了很多的安全验证模块。大部分的验证模块来自第三方的权威机构。
     - HTTP BASIC 头认证
     - HTTP Digest 头认证
@@ -62,11 +67,11 @@
     - Atlassina Crowd
     - 自己创建的认证系统
 
-## 1.2. Spring Boot Security案例
+## Spring Boot Security案例
 
-### 1.2.1. 构建Spring  boot Security工程
+### 构建Spring  boot Security工程
 
-#### 1.2.1.1. POM依赖
+#### POM依赖
 - 需要如下几个依赖：
 ```
 <dependencies>
@@ -96,9 +101,9 @@
 </dependencies>
 ```
 
-### 1.2.2. 配置Spring Security
+### 配置Spring Security
 
-#### 1.2.2.1. 配置WebSecurityConfigurerAdapter
+#### 配置WebSecurityConfigurerAdapter
 - 创建完工程后，需要配置SS。新建一个SecurityConfig类，作为配置类。
 - 作为配置类，它继承WebSecurityConfigurerAdapter类。
 - 加上@EnableWebSecurity注解，开启WebSecurity的功能。
@@ -129,7 +134,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     - Session Fixation保护
     - 安全Header集成了以下内容。
 
-#### 1.2.2.2. 配置HttpSecurity
+#### 配置HttpSecurity
 - WebSecurityConfigurerAdapter配置了如何验证用户信息。
 - 而HttpSecurity负责配置以下部分:
     - 哪些用户需要身份验证
@@ -149,7 +154,7 @@ protected void configure(HttpSecurity http) throws Exception {
             .antMatchers("/user/**").hasRole("USER")
             .antMatchers("/blogs/**").hasRole("USER")
             .and()
-            .formLogin().loginPage("/login").failureUrl("/login-error")
+            .formLogin().loginPage("/login").failureUrl("/login-error") //自动创建了一个Loginform
             .loginProcessingUrl("/login")//处理登录流程的URL
             .successForwardUrl("/login-success")
             .successHandler(new SuccessHandler())//登录成功后的处理器
@@ -161,6 +166,13 @@ protected void configure(HttpSecurity http) throws Exception {
 
 }
 ```
+- successForwardUrl 成功后跳转的url，一定要允许post，否则会报错
+- login-page指定的用户自定义的登录页面
+- default-target-url登录成功以后默认跳转到的页面
+- authentication-failure-url登录失败以后跳转到的页面
+- username-parameter指定登录表单中用户名的input中name，如果这里不配置，则默认为username
+- password-parameter指定登录表单中密码的input中name，如果这里不配置，则默认为password
+- logout-success-url成功退出以后跳转到的地址 
 - 上述代码比较好懂
     - antMatchers是要匹配的API，可以传入多个String类型
     - permitAll代表不需要验证，可以直接访问
@@ -171,7 +183,7 @@ protected void configure(HttpSecurity http) throws Exception {
 
 - 最前面是在UserName拦截器前增加了一个验证码拦截器。
 
-### 1.2.3. Spring Security方法级别上的保护
+### Spring Security方法级别上的保护
 - SS提供方法级别的安全支持。
 - 写一个配置类继承WebSecurityConfigurerAdapter，并加上相关注解，就可以开启方法级别的保护：
 ```
@@ -204,7 +216,7 @@ or
 ```
 - 如果没有权限，就会被重定向到权限不足的界面。
 
-### 1.2.4. 从数据库中读取用户的认证信息
+### 从数据库中读取用户的认证信息
 - 加上Mysql的依赖
 ```
  <dependency>
@@ -219,7 +231,7 @@ or
 
 ```
 
-#### 1.2.4.1. 创建User实体
+#### 创建User实体
 - User实体需要实现UserDetails接口。
 - UserDetail是实现SS认证信息的核心接口。getUsername不一定返回uername，可以是其他用户信息。
 - getAuthorities方法返回的是该用户设置的权限信息，这里是角色信息，但是你可以返回其他信息。
@@ -312,7 +324,7 @@ public class User implements UserDetails, Serializable {
     }
 }
 ```
-#### 1.2.4.2. 创建Role实体
+#### 创建Role实体
 - Role类实现了GrantedAuthority接口，getAuthority方法返回该类的权限点。权限点可以为任何字符串，根据你的业务需求来定义。在这里返回Role的name
 ```
 @Entity(name = "auth_role")
@@ -346,7 +358,7 @@ public class Role implements GrantedAuthority {
 }
 ```
 
-#### 1.2.4.3. UserDao
+#### UserDao
 - Dao层就是使用JPA接口去访问数据库，这里我们继承JpaRepository即可。同时加上注解@Repository，注入SpringIOC容器。
 ```
 @Repository
@@ -355,7 +367,7 @@ public interface UserDao extends JpaRepository<User, Long> {
 }
 ```
 
-#### 1.2.4.4. UserService
+#### UserService
 - Service层需要实现UserDetailService接口，该接口是根据用户名获取该用户的所有信息，包括用户信息和权限点。
 ```
 @Service
@@ -373,7 +385,7 @@ public class UserService implements UserDetailsService {
 }
 ```
 
-#### 1.2.4.5. Spring Security 配置
+#### Spring Security 配置
 - 修改SS的配置，从内存读取改为从数据库中读取。
 - 同时还需要修改密码加密策略，加入一个bean
 ```
@@ -410,12 +422,43 @@ public class UserController {
 }
 ```
   
+## 注意事项
+
+### 登录部分
+- loginProcessingUrl是form表单提交的action地址，不需要自己去写对应的action
+- successForwardUrl是成功后跳转的地址，需要自己去写对应的action，而且必须允许Post，否则会报错。
+
+### 静态资源被拦截问题
+- 要么在开启全局拦截的情况下把静态资源目录加入例外，要么不使用全局拦截。
+```
+ http.authorizeRequests()
+                .antMatchers("/assets/**","/js/**","/login").permitAll()
+```
 
 
+# 深入
+## 插入过滤器
+- 向HttpSecurity的Filter链上插入自定义的Filter,插入到UsernamePasswordAuthenticationFilter的位置上。插入方法有addFilterBefore,addFilterAt,addFilterAfter。
+- 这个地方需要注意使用addFilterAt并不是说能替换掉原有的Filter,事实上框架原有的Filter在启动HttpSecurity配置的过程中，都由框架完成了其一定程度上固定的配置，是不允许更改替换的。
+- 根据测试结果来看，调用addFilterAt方法插入的Filter，会在这个位置上的原有Filter之前执行。
 
-# 2. 深入
-
-## 2.1. 关于自定义登录问题
+### addFilter
+- addFilter好像必须是他本来就有的Filter
+```
+public HttpSecurity addFilter(Filter filter) {
+		Class<? extends Filter> filterClass = filter.getClass();
+		if (!comparator.isRegistered(filterClass)) {
+			throw new IllegalArgumentException(
+					"The Filter class "
+							+ filterClass.getName()
+							+ " does not have a registered order and cannot be added without a specified order. Consider using addFilterBefore or addFilterAfter instead.");
+		}
+		this.filters.add(filter);
+		return this;
+	}
+```
+- 他做了一个isRegistered的处理
+## 关于自定义登录问题
 - 我们可以看到，Spring Security的登录部分的认证是内部实现的，不需要我们写逻辑，只需要我们指定登录的路由，同时把表单提交到该路由即可。
 - 但是如果我们希望实现自己的逻辑该怎么做？例如我们希望除了用户名和密码，还要加上验证码等消息呢？
 - 经过网上查阅和结构分析，大概有如下几个地方可以做文章：
@@ -423,10 +466,10 @@ public class UserController {
     2. SuccessHandler ，成功后跳转的处理器，看看是否能在这里做文章。
     3. UsernamePasswordAuthenticationFilter，这是验证的过滤器，看看是否可以重写或继承该类来实现自己的验证逻辑。
 
-### 2.1.1. 过滤链
+### 过滤链
 - SS的过滤器形成了一条过滤链，一个一个往下执行，我们可以在UsernamePasswordAuthenticationFilter之前加上一个过滤器，在该过滤器中做一些操作，然后决定是否往下继续执行后续的过滤链。
 
-#### 2.1.1.1. AbstractAuthenticationProcessingFilter源码解析
+#### AbstractAuthenticationProcessingFilter源码解析
 - 主要关注doFilter函数
 ```
 public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
@@ -526,10 +569,10 @@ successHandler.onAuthenticationSuccess(request, response, authResult);
     2. 重写doFilter，自己控制逻辑。
         - 这样可以做的更细一点，但是有时候并没有必要这样写。  
 
-#### 2.1.1.2. Authentication解析
+#### Authentication解析
 - 
 
-#### 2.1.1.3. 自定义验证码过滤器
+#### 自定义验证码过滤器
 - 实际上自定义验证码过滤器的Authentication我们最后是要抛弃掉的，全程都没用到。所以这里我们可以选择重写doFilter，并且自己写一个成功处理器，不做任何操作。这样我们就避免了还需要写一个Authentication实现类的问题。
 ```
 public class CodeAuthenticationFilter extends AbstractAuthenticationProcessingFilter {

@@ -1,4 +1,3 @@
-
 CREATE TABLE IF NOT EXISTS `clientdetails` (
   `appId` VARCHAR(128) NOT NULL,
   `resourceIds` VARCHAR(256) NULL DEFAULT NULL,
